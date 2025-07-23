@@ -1,15 +1,14 @@
 # main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
 from hora_certa_app.routes import example, auth
 
 app = FastAPI()
 
-# Temporariamente habilitar CORS para todas as origens (*) para teste
+# CORS usando regex para aceitar *qualquer* subdomínio/vercel preview
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origin_regex=r"https://horacerta-frontend-nb83-.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
