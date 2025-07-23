@@ -2,19 +2,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from hora_certa_app.routes import example, auth  # importamos o novo auth
+from hora_certa_app.routes import example, auth
 
 app = FastAPI()
 
-# 1) CORS: ajuste as URLs para os seus domínios
-origins = [
-    "http://localhost:3000",
-    "https://horacerta-frontend-nb83-7gvph7pq7-cretcheus-projects.vercel.app",
-    "https://horacerta-frontend-nb83-i4np2f9vc-cretcheus-projects.vercel.app",
-    "https://horacerta.eu",
-    "https://www.horacerta.eu",
-]
-
+# Temporariamente habilitar CORS para todas as origens (*) para teste
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -23,7 +15,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 2) Routers
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(example.router, prefix="/example", tags=["example"])
 
