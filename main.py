@@ -5,10 +5,10 @@ from hora_certa_app.routes import example, auth
 
 app = FastAPI()
 
-# CORS via regex para todos os previews do Vercel do seu projeto
+# CORS aberto para teste
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"^https://horacerta-frontend-nb83-.*\.vercel\.app$",
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
