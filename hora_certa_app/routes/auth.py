@@ -1,13 +1,15 @@
 # hora_certa_app/routes/auth.py
+
+from typing import Optional
+from datetime import datetime, timedelta
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, EmailStr
 from passlib.context import CryptContext
-from datetime import datetime, timedelta
-from typing import Optional
 from jose import jwt
 
 # Configurações de JWT
-SECRET_KEY = "mude_para_uma_chave_bem_secreta"
+SECRET_KEY = "sua_chave_secreta_aqui"  # Troque por algo seguro em produção
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
@@ -20,18 +22,14 @@ class RegisterIn(BaseModel):
     email: EmailStr
     password: str
 
-class LoginIn(BaseModel):
-    email: EmailStr
-    password: str
-
 class TokenOut(BaseModel):
     access_token: str
     token_type: str = "bearer"
 
-# Banco dummy (substituir por ORM depois)
+# “Banco” temporário em memória
 fake_users_db: dict[str, dict] = {}
 
-# Helpers
+# Funções utilitárias
 def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
 
@@ -40,22 +38,27 @@ def get_password_hash(password: str) -> str:
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()
-    expire = datetime.utcnow() + (expires_delta if expires_delta else timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    expire = datetime.utcnow() + (
+        expires_delta if expires_delta else timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-# Endpoints
+# Rotas
 @router.post("/register", response_model=TokenOut)
 async def register(input: RegisterIn):
     if input.email in fake_users_db:
         raise HTTPException(status_code=400, detail="Email já cadastrado")
     hashed = get_password_hash(input.password)
-    fake_users_db[input.email] = {"name": input.name, "hashed_password": hashed}
+    fake_users_db[input.email] = {
+        "name": input.name,
+        "hashed_password": hashed
+    }
     token = create_access_token({"sub": input.email})
     return {"access_token": token}
 
 @router.post("/login", response_model=TokenOut)
-async def login(input: LoginIn):
+async def login(input: RegisterIn):
     user = fake_users_db.get(input.email)
     if not user or not verify_password(input.password, user["hashed_password"]):
         raise HTTPException(status_code=401, detail="Credenciais inválidas")
