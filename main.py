@@ -5,10 +5,10 @@ from hora_certa_app.routes import example, auth
 
 app = FastAPI()
 
-# CORS aberto para teste
+# Durante o teste, libere CORS para *todas* as origens
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],       # atenção ao wildcard aqui
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
