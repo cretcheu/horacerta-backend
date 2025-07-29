@@ -1,40 +1,48 @@
 import os
 import sys
 from logging.config import fileConfig
+
 from sqlalchemy import engine_from_config, pool
 from alembic import context
 from dotenv import load_dotenv
 
-# ====================================================================
-# 1) Garanta que o diretório raiz do seu projeto esteja no Python path
-# ====================================================================
+# ─────────────────────────────────────────────────────────────────────────────
+# 1) Ajuste do path: garante que "hora_certa_app" (o package) seja importável
+# ─────────────────────────────────────────────────────────────────────────────
+# insere o diretório-pai de alembic/ em sys.path
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-# carrega variáveis de ambiente de .env (local) ou do Railway
+# ─────────────────────────────────────────────────────────────────────────────
+# 2) Carregamento de variáveis de ambiente (se usar .env local)
+# ─────────────────────────────────────────────────────────────────────────────
 load_dotenv()
 
-# importe sua Base e os módulos de modelo para o Alembic reconhecer o metadata
+# ─────────────────────────────────────────────────────────────────────────────
+# 3) Import dos seus modelos e Base
+# ─────────────────────────────────────────────────────────────────────────────
 from hora_certa_app.db import Base
 import hora_certa_app.models.user
 import hora_certa_app.models.appointment
 
-# this is the Alembic Config object, que fornece
-# acesso às configurações no alembic.ini
+# ─────────────────────────────────────────────────────────────────────────────
+# 4) Configurações do Alembic
+# ─────────────────────────────────────────────────────────────────────────────
 config = context.config
 
-# Override da URL de conexão usando a variável de ambiente
+# Override da URL de conexão para usar a env var
 config.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL"))
 
-# Configura logging segundo o alembic.ini
+# Logging conforme definido no alembic.ini
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# metadata dos seus modelos, usado para autogenerate
+# Metadata dos modelos — usado no autogenerate
 target_metadata = Base.metadata
 
-
+# ─────────────────────────────────────────────────────────────────────────────
+# 5) Funções de migração offline e online
+# ─────────────────────────────────────────────────────────────────────────────
 def run_migrations_offline() -> None:
-    """Run migrations em modo 'offline'."""
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
@@ -47,7 +55,6 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    """Run migrations em modo 'online'."""
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
@@ -59,6 +66,9 @@ def run_migrations_online() -> None:
             context.run_migrations()
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# 6) Entry point: escolhe offline ou online
+# ─────────────────────────────────────────────────────────────────────────────
 if context.is_offline_mode():
     run_migrations_offline()
 else:
