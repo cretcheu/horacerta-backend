@@ -1,24 +1,23 @@
 import os
 import sys
 from logging.config import fileConfig
-
 from sqlalchemy import engine_from_config, pool
 from alembic import context
 from dotenv import load_dotenv
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 1) Ajuste do path: garante que "hora_certa_app" (o package) seja importável
+# 1) Insere o diretório-RAIZ do projeto no PYTHONPATH para achar o seu pacote
 # ─────────────────────────────────────────────────────────────────────────────
-# insere o diretório-pai de alembic/ em sys.path
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+proj_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, proj_root)
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 2) Carregamento de variáveis de ambiente (se usar .env local)
+# 2) Carrega variáveis de ambiente de um .env local (opcional)
 # ─────────────────────────────────────────────────────────────────────────────
-load_dotenv()
+load_dotenv(os.path.join(proj_root, ".env"))
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 3) Import dos seus modelos e Base
+# 3) Importa seu Base e todos os modelos para o Alembic conhecer o metadata
 # ─────────────────────────────────────────────────────────────────────────────
 from hora_certa_app.db import Base
 import hora_certa_app.models.user
@@ -28,15 +27,11 @@ import hora_certa_app.models.appointment
 # 4) Configurações do Alembic
 # ─────────────────────────────────────────────────────────────────────────────
 config = context.config
-
-# Override da URL de conexão para usar a env var
 config.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL"))
 
-# Logging conforme definido no alembic.ini
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Metadata dos modelos — usado no autogenerate
 target_metadata = Base.metadata
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -53,7 +48,6 @@ def run_migrations_offline() -> None:
     with context.begin_transaction():
         context.run_migrations()
 
-
 def run_migrations_online() -> None:
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
@@ -65,10 +59,6 @@ def run_migrations_online() -> None:
         with context.begin_transaction():
             context.run_migrations()
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# 6) Entry point: escolhe offline ou online
-# ─────────────────────────────────────────────────────────────────────────────
 if context.is_offline_mode():
     run_migrations_offline()
 else:
