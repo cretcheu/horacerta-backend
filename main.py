@@ -1,20 +1,21 @@
 # main.py
 
 import os
+from dotenv import load_dotenv
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# 1) Importa engine e Base (SQLAlchemy)
+# 1) Carrega variáveis de ambiente do .env (local) ou do Railway
+load_dotenv()
+
+# 2) Importa engine e Base (SQLAlchemy)
 from hora_certa_app.db import engine, Base
 
-# 2) Importa seus routers
+# 3) Importa seus routers
 from hora_certa_app.routes import auth, example
 
-# 3) Cria todas as tabelas que ainda não existem no banco
-Base.metadata.create_all(bind=engine)
-
-# 4) Inicializa o FastAPI
+# 4) Cria o FastAPI
 app = FastAPI(title="Hora Certa Backend API")
 
 # 5) Configura CORS
@@ -34,11 +35,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 6) Inclui as rotas
-app.include_router(auth.router,  prefix="/auth",    tags=["auth"])
+# 6) Startup event: cria todas as tabelas que ainda não existem
+@app.on_event("startup")
+def on_startup():
+    Base.metadata.create_all(bind=engine)
+
+# 7) Inclui as rotas
+app.include_router(auth.router,    prefix="/auth",    tags=["auth"])
 app.include_router(example.router, prefix="/example", tags=["example"])
 
-# 7) Rota de health-check
+# 8) Health check
 @app.get("/")
 def read_root():
     return {"message": "Hora Certa Backend API online"}
