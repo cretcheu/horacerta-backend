@@ -1,0 +1,1 @@
+DATABASE_URL=sqlite:///./hora_certa_app.db
