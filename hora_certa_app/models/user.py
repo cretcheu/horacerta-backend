@@ -8,9 +8,9 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    email = Column(String, unique=True, index=True, nullable=False)
-    hashed_password = Column(String, nullable=False)
+    name = Column(String(255), nullable=False)
+    email = Column(String(255), unique=True, index=True, nullable=False)
+    hashed_password = Column(String(255), nullable=False)
 
     # Relacionamento um-para-muitos com Appointment
     appointments = relationship(
@@ -18,3 +18,6 @@ class User(Base):
         back_populates="user",
         cascade="all, delete-orphan"
     )
+
+    def __repr__(self):
+        return f"<User id={self.id!r} email={self.email!r}>"

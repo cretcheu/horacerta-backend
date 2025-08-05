@@ -14,6 +14,7 @@ from hora_certa_app.db import engine, Base
 
 # 3) Importa seus routers
 from hora_certa_app.routes import auth, example
+from hora_certa_app.routes.appointments import router as appointments_router
 
 # 4) Cria o FastAPI
 app = FastAPI(title="Hora Certa Backend API")
@@ -41,8 +42,9 @@ def on_startup():
     Base.metadata.create_all(bind=engine)
 
 # 7) Inclui as rotas
-app.include_router(auth.router,    prefix="/auth",    tags=["auth"])
-app.include_router(example.router, prefix="/example", tags=["example"])
+app.include_router(auth.router,          prefix="/auth",        tags=["auth"])
+app.include_router(example.router,       prefix="/example",     tags=["example"])
+app.include_router(appointments_router,  prefix="/appointments", tags=["appointments"])
 
 # 8) Health check
 @app.get("/")
